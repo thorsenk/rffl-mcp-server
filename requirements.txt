@@ -1,0 +1,2 @@
+fastmcp>=2.6,<3
+espn_api>=0.45
