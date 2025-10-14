@@ -181,7 +181,7 @@ See `DEPLOYMENT.md` for full deployment checklist and `TEST_PLAN.md` for testing
 
 ```
 rffl-mcp-server/
-├── rffl_mcp_server.py        # Main server (single file, 696 lines with enhanced docstrings)
+├── rffl_mcp_server.py        # Main server (single file, ~700 lines with enhanced docstrings)
 ├── requirements.txt           # FastMCP + espn_api dependencies
 ├── README.md                 # User documentation (includes advanced FastMCP features)
 ├── DEPLOYMENT.md             # FastMCP Cloud deployment guide
@@ -224,6 +224,14 @@ Cache logic is in `_get_league()` function (lines 80-166). Key considerations:
 2. Verify current week detection works (`league.current_week`)
 3. Test matchups and boxscores for active weeks
 4. No code changes needed - year is parameterized
+
+## Project Evolution
+
+For detailed records of major enhancement work, see:
+- [October 2025 Cursor Enhancement Report](reports/2025-10-14-enhancement-and-documentation-report.md) - Tool docstring enhancements, advanced features documentation, comprehensive audit
+- [October 2025 Agent Audit Report](reports/2025-10-14-agent-audit-report.md) - Doc-health-auditor and ESPN-FFB-API-Expert comprehensive analysis
+
+These reports provide forensic-level documentation of project improvements and serve as reference for future development.
 
 ## Git Commit Guidelines
 
