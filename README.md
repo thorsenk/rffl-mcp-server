@@ -177,6 +177,264 @@ ENABLE_CACHE=false python rffl_mcp_server.py
 LOG_LEVEL=DEBUG python rffl_mcp_server.py
 ```
 
+## Advanced FastMCP Cloud Features
+
+Beyond the basic tools, FastMCP Cloud provides three powerful capabilities to extend your server: **Resources**, **Resource Templates**, and **Prompts**.
+
+### Resources
+
+**What they are:** Resources expose static or dynamic data/content that MCP clients can access for context. Think of them as "readable assets" your server makes available.
+
+**Use cases for rffl-mcp-server:**
+
+1. **League Documentation**
+   - Expose `league-rules.md` as `resource://league/rules`
+   - Scoring system explanations
+   - Historical league notes
+
+2. **Schema Definitions**
+   - Team structure schemas
+   - Player stat definitions
+   - API response formats
+
+3. **Cached Reports**
+   - Pre-generated season summaries
+   - Historical comparisons
+   - League analytics dashboards
+
+**How to implement:**
+
+```python
+from fastmcp import FastMCP
+
+mcp = FastMCP("rffl-mcp-server")
+
+@mcp.resource("league://rules")
+def get_league_rules():
+    """Expose league rules as a resource"""
+    return {
+        "uri": "league://rules",
+        "name": "RFFL League Rules",
+        "mimeType": "text/markdown",
+        "text": "# League Rules\n\n## Scoring System\n..."
+    }
+
+@mcp.resource("league://history/{year}")
+def get_season_summary(year: int):
+    """Dynamic resource for season summaries"""
+    # Fetch data for that year
+    league = League(league_id=323196, year=year, espn_s2=ESPN_S2, swid=SWID)
+    summary = f"# {year} Season Summary\n\nChampion: {league.standings()[0].team_name}..."
+    return {
+        "uri": f"league://history/{year}",
+        "name": f"{year} Season Summary",
+        "mimeType": "text/markdown",
+        "text": summary
+    }
+```
+
+**In FastMCP dashboard:** Resources appear automatically from your manifest after deployment.
+
+---
+
+### Resource Templates
+
+**What they are:** Parameterized resources that generate content dynamically based on URI patterns. Like resources, but with variable paths.
+
+**Use cases for rffl-mcp-server:**
+
+1. **Dynamic Player Cards**
+   - `player://stats/{player_id}` - Generate player stat cards on-demand
+   - `player://history/{player_id}/{year}` - Historical player data
+
+2. **Team Dashboards**
+   - `team://overview/{team_id}` - Real-time team dashboard
+   - `team://matchup/{team_id}/{week}` - Specific matchup analysis
+
+3. **Week-by-Week Reports**
+   - `week://summary/{year}/{week}` - Auto-generated week summaries
+   - `week://boxscore/{year}/{week}/{matchup_id}` - Detailed boxscores
+
+**How to implement:**
+
+```python
+@mcp.resource_template("player://stats/{player_id}")
+def player_stats_card(player_id: int):
+    """Generate player stat card on-demand"""
+    league = _get_league()
+    player = league.player_info(playerId=player_id)
+    
+    card = f"""
+# {player.name} - {player.position}
+
+**Team:** {player.proTeam}
+**Total Points:** {player.total_points}
+**Average:** {player.avg_points}
+**Projected:** {player.projected_total_points}
+"""
+    return {
+        "uri": f"player://stats/{player_id}",
+        "name": f"{player.name} Stats",
+        "mimeType": "text/markdown",
+        "text": card
+    }
+```
+
+**In FastMCP dashboard:** Templates appear with their URI pattern (e.g., `player://stats/{player_id}`).
+
+---
+
+### Prompts
+
+**What they are:** Pre-configured AI instructions that guide how MCP clients (like ChatMCP) interact with your tools. They improve natural language understanding and tool calling accuracy.
+
+**Use cases for rffl-mcp-server:**
+
+1. **Improve Tool Discovery**
+   - Teach AI when to use each tool
+   - Explain parameter meanings
+   - Provide usage examples
+
+2. **Handle Natural Language**
+   - "Show me 2016 standings" → `get_standings(year=2016)`
+   - "Week 5 matchups" → `get_matchups(week=5)`
+   - "Last year's champion" → `get_standings(year=2024)` + extract winner
+
+3. **Add Fantasy Football Context**
+   - Scoring system explanations
+   - Common abbreviations (RB, WR, PPR, etc.)
+   - League-specific rules
+
+**How to implement:**
+
+```python
+@mcp.prompt("fantasy-expert")
+def fantasy_football_assistant():
+    """Prompt to guide AI behavior"""
+    return {
+        "name": "fantasy-expert",
+        "description": "Fantasy football expert assistant for RFFL",
+        "arguments": [],
+        "prompt": """
+You are a fantasy football expert assistant for the RFFL league (ID: 323196).
+
+TOOL USAGE GUIDELINES:
+- When user mentions a year (e.g., "2016", "last year"), extract it and pass as year parameter
+- When user mentions a week (e.g., "week 5", "this week"), pass as week parameter
+- Default to current season (2025) if no year specified
+- Historical data (2018-2022) requires authentication
+
+NATURAL LANGUAGE MAPPING:
+- "standings" / "rankings" → get_standings(year=X)
+- "matchups" / "games" / "scores" → get_matchups(week=X, year=Y)
+- "boxscores" / "detailed scores" → get_enhanced_boxscores(week=X, year=Y)
+- "power rankings" → get_power_rankings(week=X, year=Y)
+- "player stats" / "lookup [player]" → get_player_info(name="player", year=Y)
+
+COMMON ABBREVIATIONS:
+- QB=Quarterback, RB=Running Back, WR=Wide Receiver, TE=Tight End
+- PPR=Points Per Reception, FLEX=Flexible position slot
+- IR=Injured Reserve, BYE=Team bye week
+
+EXAMPLES:
+User: "Show me 2016 standings"
+→ Call: get_standings(year=2016)
+
+User: "Week 5 matchups for 2022"
+→ Call: get_matchups(week=5, year=2022)
+
+User: "Who won last year?"
+→ Call: get_standings(year=2024) → Extract rank 1 team
+
+Always be helpful, concise, and fantasy-football savvy!
+"""
+    }
+
+@mcp.prompt("historical-analysis")
+def historical_data_prompt():
+    """Prompt for historical data queries"""
+    return {
+        "name": "historical-analysis", 
+        "description": "Analyze historical RFFL data across multiple seasons",
+        "arguments": [
+            {"name": "start_year", "description": "First year to analyze", "required": True},
+            {"name": "end_year", "description": "Last year to analyze", "required": True}
+        ],
+        "prompt": """
+Analyze RFFL historical data from {start_year} to {end_year}.
+
+STEPS:
+1. For each year in range, call get_standings(year=YEAR)
+2. Extract champion, runner-up, top scorer
+3. Identify trends (repeat champions, scoring increases, etc.)
+4. Summarize findings in a markdown table
+
+Use get_matchups() and get_power_rankings() for deeper insights if needed.
+"""
+    }
+```
+
+**In FastMCP dashboard:** Prompts appear with name, description, and can be invoked by AI clients.
+
+---
+
+### Implementation Priority
+
+**Start with Prompts** (Highest Impact):
+1. Create `fantasy-expert` prompt to improve ChatMCP interactions
+2. Test natural language queries immediately
+3. Iterate based on what ChatMCP still struggles with
+
+**Then Resources** (Medium Effort, High Value):
+1. Add league rules/documentation as static resources
+2. Create season summary resources for each year
+3. Helps AI understand league context better
+
+**Finally Resource Templates** (Advanced):
+1. Dynamic player cards
+2. On-demand team dashboards
+3. Best for power users who want deep integrations
+
+---
+
+### Example: Adding Your First Prompt
+
+**1. Update `rffl_mcp_server.py`:**
+
+```python
+@mcp.prompt("fantasy-expert")
+def fantasy_football_assistant():
+    return {
+        "name": "fantasy-expert",
+        "description": "Fantasy football expert for RFFL with smart tool calling",
+        "arguments": [],
+        "prompt": """
+You are an expert RFFL fantasy football assistant. 
+
+When users mention years (2016, 2022, "last year"), extract and use as year parameter.
+When users mention weeks (week 5, "this week"), extract and use as week parameter.
+
+Tool mapping:
+- "standings"/"rankings" → get_standings(year=X)
+- "matchups"/"games" → get_matchups(week=X, year=Y)  
+- "boxscores" → get_enhanced_boxscores(week=X, year=Y)
+
+Always include year in responses to avoid confusion.
+"""
+    }
+```
+
+**2. Commit and push:**
+```bash
+git add rffl_mcp_server.py
+git commit -m "Add fantasy-expert prompt for improved natural language"
+git push origin main
+```
+
+**3. FastMCP auto-deploys** → Prompt appears in dashboard → ChatMCP uses it automatically!
+
+---
+
 ## Architecture
 
 Built with:
