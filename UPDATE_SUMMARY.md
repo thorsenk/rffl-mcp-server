@@ -29,17 +29,7 @@ This update adds ESPN authentication support to enable access to historical fant
 
 ### New Files Created
 
-3. **.env.example** (new file)
-   - Template for environment configuration
-   - Placeholder values for ESPN_S2 and SWID
-   - Comments explaining each variable
-
-4. **.env** (new file, git-ignored)
-   - Contains your actual RFFL league credentials
-   - ESPN_S2 and SWID cookies stored securely
-   - Already in .gitignore, will not be committed
-
-5. **HISTORICAL_DATA_FIX.md** (new file - comprehensive documentation)
+3. **HISTORICAL_DATA_FIX.md** (new file - comprehensive documentation)
    - Full investigation report
    - Root cause analysis
    - Testing results with detailed matrices
@@ -47,7 +37,7 @@ This update adds ESPN authentication support to enable access to historical fant
    - Known issues and limitations
    - Implementation checklist
 
-6. **MIGRATION_GUIDE.md** (new file - migration instructions)
+4. **MIGRATION_GUIDE.md** (new file - migration instructions)
    - Step-by-step migration guide
    - Code examples before/after
    - Testing procedures
@@ -55,13 +45,15 @@ This update adds ESPN authentication support to enable access to historical fant
    - Security best practices
    - Deployment checklist
 
-### Test Files (for reference/debugging)
+### Diagnostic Test Scripts (optional, for debugging)
 
-7. **test_historical_data.py** - Comprehensive historical data testing
-8. **test_with_auth.py** - Authentication validation tests
-9. **test_with_full_auth.py** - Full auth credential tests
-10. **test_direct_api.py** - Direct ESPN API endpoint testing
-11. **test_2022_debug.py** - Debugging script for 2022 issues
+- **test_historical_data.py** - Comprehensive historical data testing
+- **test_with_auth.py** - Authentication validation tests
+- **test_with_full_auth.py** - Full auth credential tests
+- **test_direct_api.py** - Direct ESPN API endpoint testing
+- **test_2022_debug.py** - Debugging script for 2022 issues
+
+**Note**: These are diagnostic scripts used during development, not part of the core server.
 
 ## Key Changes Summary
 
@@ -134,17 +126,12 @@ SWID={your_swid_cookie_value}
 ### Local Development
 
 ```bash
-# 1. Copy environment template
-cp .env.example .env
+# 1. Create .env file with your ESPN cookies
+#    (Get from ESPN.com browser cookies - see README.md for instructions)
 
-# 2. Add your ESPN cookies to .env file
-#    (Get from ESPN.com browser cookies)
-
-# 3. Run the server
+# 2. Run the server
 python rffl_mcp_server.py
 
-# 4. Test historical data
-ESPN_YEAR=2022 python rffl_mcp_server.py
 ```
 
 ### FastMCP Cloud Deployment
@@ -231,13 +218,17 @@ No performance degradation from adding authentication.
 
 ✅ rffl_mcp_server.py
 ✅ README.md
-✅ .env.example
+✅ CLAUDE.md
+✅ DEPLOYMENT.md
+✅ TEST_PLAN.md
 ✅ HISTORICAL_DATA_FIX.md
 ✅ MIGRATION_GUIDE.md
+✅ UPDATE_SUMMARY.md
+✅ requirements.txt
 ✅ .gitignore
 
-❌ .env (contains real credentials - already git-ignored)
-❌ test_*.py files (optional, for reference only)
+❌ .env (if created locally - contains real credentials, use environment variables in FastMCP Cloud)
+❌ test_*.py files (diagnostic scripts, not part of core server)
 
 ## Support & Troubleshooting
 

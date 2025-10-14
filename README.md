@@ -25,9 +25,8 @@ This installs the live server at `https://rffl-mcp-server.fastmcp.app/mcp` with 
 # Install dependencies
 pip install -r requirements.txt
 
-# Copy and configure environment variables
-cp .env.example .env
-# Edit .env to add your ESPN_S2 and SWID cookies (required for historical data)
+# Configure environment variables
+# Create .env file with your ESPN credentials (required for historical data)
 
 # Run the server
 python rffl_mcp_server.py                 # stdio
@@ -158,8 +157,8 @@ clear_cache()
 # Install dependencies
 pip install -r requirements.txt
 
-# Set up authentication (copy .env.example to .env and fill in your cookies)
-cp .env.example .env
+# Set up authentication (create .env file with your ESPN cookies)
+# See "Getting ESPN Authentication Cookies" section above for instructions
 
 # Run with stdio transport
 python rffl_mcp_server.py
@@ -263,7 +262,7 @@ def player_stats_card(player_id: int):
     """Generate player stat card on-demand"""
     league = _get_league()
     player = league.player_info(playerId=player_id)
-    
+
     card = f"""
 # {player.name} - {player.position}
 
@@ -354,7 +353,7 @@ Always be helpful, concise, and fantasy-football savvy!
 def historical_data_prompt():
     """Prompt for historical data queries"""
     return {
-        "name": "historical-analysis", 
+        "name": "historical-analysis",
         "description": "Analyze historical RFFL data across multiple seasons",
         "arguments": [
             {"name": "start_year", "description": "First year to analyze", "required": True},
@@ -409,14 +408,14 @@ def fantasy_football_assistant():
         "description": "Fantasy football expert for RFFL with smart tool calling",
         "arguments": [],
         "prompt": """
-You are an expert RFFL fantasy football assistant. 
+You are an expert RFFL fantasy football assistant.
 
 When users mention years (2016, 2022, "last year"), extract and use as year parameter.
 When users mention weeks (week 5, "this week"), extract and use as week parameter.
 
 Tool mapping:
 - "standings"/"rankings" → get_standings(year=X)
-- "matchups"/"games" → get_matchups(week=X, year=Y)  
+- "matchups"/"games" → get_matchups(week=X, year=Y)
 - "boxscores" → get_enhanced_boxscores(week=X, year=Y)
 
 Always include year in responses to avoid confusion.

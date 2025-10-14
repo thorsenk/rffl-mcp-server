@@ -68,19 +68,7 @@ Ensure your `.gitignore` includes:
 !.env.example
 ```
 
-### Step 5: Create .env.example
-
-Provide a template for others:
-
-```bash
-# .env.example
-ESPN_LEAGUE_ID=your_league_id
-ESPN_YEAR=2025
-ESPN_S2=get_from_espn_cookies
-SWID={get_from_espn_cookies}
-```
-
-### Step 6: Update Documentation
+### Step 5: Update Documentation
 
 Add a section explaining:
 - Why authentication is needed
@@ -158,14 +146,13 @@ See the comprehensive investigation document: `HISTORICAL_DATA_FIX.md`
 
 ## Checklist
 
-- [ ] Get ESPN_S2 and SWID cookies
-- [ ] Create .env file with credentials
+- [ ] Get ESPN_S2 and SWID cookies from ESPN.com
+- [ ] Add environment variables (locally: .env file, production: FastMCP dashboard)
 - [ ] Update code to pass authentication parameters
-- [ ] Ensure .env is in .gitignore
-- [ ] Create .env.example template
+- [ ] Ensure .env is in .gitignore (if using locally)
 - [ ] Update project documentation
 - [ ] Test with historical years (2018-2022)
-- [ ] Deploy updated environment variables to production
+- [ ] Deploy updated environment variables to production (FastMCP Cloud)
 - [ ] Document cookie refresh process for your team
 
 ---

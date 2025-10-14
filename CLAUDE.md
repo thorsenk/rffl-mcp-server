@@ -127,7 +127,7 @@ These are **diagnostic scripts** for development, not automated test suites.
 2. Open Developer Tools (F12)
 3. Navigate to Application/Storage tab → Cookies → `https://espn.com`
 4. Copy `espn_s2` and `SWID` values
-5. Add to `.env` file (use `.env.example` as template)
+5. Add to `.env` file locally or environment variables in FastMCP Cloud dashboard
 
 ### Data Availability by Year
 
@@ -181,10 +181,9 @@ See `DEPLOYMENT.md` for full deployment checklist and `TEST_PLAN.md` for testing
 
 ```
 rffl-mcp-server/
-├── rffl_mcp_server.py        # Main server (single file, ~560 lines)
+├── rffl_mcp_server.py        # Main server (single file, 696 lines with enhanced docstrings)
 ├── requirements.txt           # FastMCP + espn_api dependencies
-├── .env.example              # Environment variable template
-├── README.md                 # User documentation
+├── README.md                 # User documentation (includes advanced FastMCP features)
 ├── DEPLOYMENT.md             # FastMCP Cloud deployment guide
 ├── TEST_PLAN.md              # Comprehensive test strategy
 ├── HISTORICAL_DATA_FIX.md    # Historical data troubleshooting
