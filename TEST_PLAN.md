@@ -43,7 +43,7 @@ python3 -c "from rffl_mcp_server import mcp; print(f'Server: {mcp.name}'); print
 **Expected:**
 ```
 Server: rffl-mcp-server
-Tools: 10
+Tools: 11
 ```
 **Status:** ⏭️ Skip if dependencies not installed (FastMCP Cloud will handle this)
 
@@ -51,12 +51,12 @@ Tools: 10
 
 ### 4. Tool Registration Check
 
-**Test:** Verify all 10 tools are decorated with @mcp.tool
+**Test:** Verify all 11 tools are decorated with @mcp.tool
 ```bash
 grep -c "^@mcp\.tool" rffl_mcp_server.py
 ```
-**Expected:** `10`
-**Status:** ✅ Already verified (10 tools found)
+**Expected:** `11`
+**Status:** ✅ Already verified (11 tools found)
 
 ---
 
@@ -364,19 +364,20 @@ Redeploy, then call `get_cache_stats()`
 
 ---
 
-### 24. Private League Error Test
+### 24. Historical Data & Authentication Test
 
-**Test:** Call with a private league ID (if known)
+**Test:** Call with historical year (2022) to verify authentication works
 ```
-get_league(league_id=<private_league_id>)
+get_league(year=2022)
+get_standings(year=2022)
 ```
 
-**Expected Response:** Error with message:
-```
-"Unable to load league XXX (YYYY) without auth. This build is PUBLIC-ONLY and does not support private leagues."
-```
-**Purpose:** Verify proper error handling for private leagues
-**Priority:** 🟢 Nice to have
+**Expected Response:**
+- ✅ Success if ESPN_S2 and SWID are configured
+- ❌ Error if authentication missing: "Historical data (pre-2023) requires authentication. Set ESPN_S2 and SWID environment variables."
+
+**Purpose:** Verify authentication support for historical data (2018-2022)
+**Priority:** 🔴 Critical (core feature)
 
 ---
 
@@ -426,7 +427,7 @@ get_league(league_id=<private_league_id>)
 - [ ] Test 16: `get_power_rankings()` - Power rankings
 - [ ] Test 18: `get_player_info()` - Player lookup
 - [ ] Test 23: Cache toggle (disable)
-- [ ] Test 24: Private league error handling
+- [ ] Test 24: Historical data authentication (2022 season)
 
 ---
 
@@ -451,7 +452,11 @@ get_league(league_id=<private_league_id>)
 **Solution:** Verify entrypoint is exactly `rffl_mcp_server.py:mcp` (no `.py:` typo)
 
 ### Issue: ESPN API returns 401/403
-**Solution:** League might be private. Verify league ID 323196 is public, or use a different public league
+**Solution:**
+- Historical data (2018-2022) requires ESPN_S2 and SWID authentication
+- Add these cookies to your environment variables in FastMCP dashboard
+- See README.md "Getting ESPN Cookies" section for instructions
+- Redeploy after adding environment variables
 
 ### Issue: Cache stats always show 0% hit rate
 **Solution:** Check `ENABLE_CACHE=true` in environment variables. Verify multiple calls use same league_id/year

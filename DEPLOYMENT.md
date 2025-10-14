@@ -53,12 +53,22 @@ rffl_mcp_server.py:mcp
 ```
 
 **Environment Variables** (Project → Settings → Environment):
+
+**Required for all deployments:**
 ```
 ESPN_LEAGUE_ID=323196
 ESPN_YEAR=2025
 ENABLE_CACHE=true
 LOG_LEVEL=INFO
 ```
+
+**Required for historical data (2018-2022) and private leagues:**
+```
+ESPN_S2=your_espn_s2_cookie_from_browser
+SWID={your_swid_cookie_from_browser}
+```
+
+See "Getting ESPN Cookies" section in README.md for instructions.
 
 ### 4. Deploy
 
@@ -148,15 +158,21 @@ Returns:
 
 ## Troubleshooting
 
-### Private League Error
+### Authentication Errors
 
 If you see:
 ```
-"Unable to load league XXX (YYYY) without auth. This build is PUBLIC-ONLY..."
+"Unable to load league XXX (YYYY) without auth..."
 ```
 
-**Solution:** This server only supports PUBLIC ESPN leagues. Verify your league is public at:
-`https://fantasy.espn.com/football/league?leagueId=YOUR_LEAGUE_ID`
+**Causes:**
+- Private league or historical data (2018-2022) requires ESPN_S2 and SWID cookies
+- Missing or expired authentication cookies
+
+**Solutions:**
+1. Add `ESPN_S2` and `SWID` environment variables (see README.md for instructions)
+2. Verify cookies are still valid (log into ESPN.com and get fresh values)
+3. Redeploy after adding environment variables
 
 ### Cache Issues
 
@@ -179,12 +195,22 @@ ENABLE_CACHE=false
 
 ## Production Configuration
 
-**Recommended settings:**
+**Recommended settings (public leagues, recent seasons):**
 ```
 ESPN_LEAGUE_ID=<your_league_id>
 ESPN_YEAR=2025
 ENABLE_CACHE=true        # Better performance
 LOG_LEVEL=INFO           # Balance detail vs noise
+```
+
+**With authentication (private leagues or historical data):**
+```
+ESPN_LEAGUE_ID=<your_league_id>
+ESPN_YEAR=2025
+ESPN_S2=<your_espn_s2_cookie>
+SWID={your_swid_cookie}
+ENABLE_CACHE=true
+LOG_LEVEL=INFO
 ```
 
 **Load testing settings:**
@@ -195,11 +221,12 @@ LOG_LEVEL=DEBUG          # Maximum observability
 
 ## Important Notes
 
-- ✅ PUBLIC LEAGUES ONLY - no private league support
-- ✅ No authentication/cookies needed
-- ✅ FastMCP Cloud handles SSL, scaling, logging dashboard
-- ✅ Free tier suitable for personal use
-- ✅ Structured logs for easy debugging
+- ✅ **Supports both public and private leagues** (with ESPN authentication)
+- ✅ **Historical data access** (2018-2022 requires ESPN_S2 and SWID cookies)
+- ✅ **FastMCP Cloud handles** SSL, scaling, and logging dashboard
+- ✅ **Free tier** suitable for personal use
+- ✅ **Structured logs** for easy debugging
+- ✅ **ChatMCP included** - test your tools directly in the browser
 
 ## Next Steps After Deployment
 

@@ -225,3 +225,61 @@ Cache logic is in `_get_league()` function (lines 80-166). Key considerations:
 2. Verify current week detection works (`league.current_week`)
 3. Test matchups and boxscores for active weeks
 4. No code changes needed - year is parameterized
+
+## Git Commit Guidelines
+
+**IMPORTANT: Only commit when explicitly requested by the user.**
+
+### Commit Process
+
+1. **Run in parallel before committing:**
+   - `git status` - See all untracked files
+   - `git diff` - See staged and unstaged changes
+   - `git log --oneline -5` - Review recent commit style
+
+2. **Analyze changes and draft commit message:**
+   - Summarize nature of changes (feature, enhancement, bug fix, refactoring, test, docs)
+   - Focus on "why" rather than "what"
+   - Keep message concise (1-2 sentences for summary)
+   - DO NOT commit files with secrets (.env, credentials.json, etc.)
+
+3. **Create commit with standard footer:**
+   ```bash
+   git commit -m "$(cat <<'EOF'
+   Commit message summary here.
+
+   Optional detailed explanation of changes and reasoning.
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   EOF
+   )"
+   ```
+
+4. **After commit:** Run `git status` to verify success
+
+### Git Safety Rules
+
+**NEVER:**
+- Update git config
+- Run destructive commands (push --force, hard reset) unless explicitly requested
+- Skip hooks (--no-verify, --no-gpg-sign) unless explicitly requested
+- Force push to main/master (warn user if requested)
+- Use `git commit --amend` unless: (1) user explicitly requests OR (2) fixing pre-commit hook changes
+- Push to remote unless user explicitly asks
+
+**Before amending:** Always check authorship with `git log -1 --format='%an %ae'`
+
+### Typical Commit Flow
+
+```bash
+# Stage relevant files
+git add file1.py file2.md
+
+# Create commit
+git commit -m "message with footer"
+
+# Only push if user requests
+git push origin main
+```

@@ -273,8 +273,21 @@ def get_league(
     year: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
-    Get league meta, settings, and team list.
-    Note: Historical seasons (pre-2023) require ESPN authentication.
+    Get league metadata, settings, and team list for any season.
+
+    Args:
+        league_id: ESPN league ID (optional, defaults to ESPN_LEAGUE_ID env var)
+        year: Season year like 2016, 2022, 2025 (optional, defaults to ESPN_YEAR env var)
+
+    Returns:
+        League info including settings, teams, current week
+
+    Examples:
+        - get_league() → Uses env var defaults
+        - get_league(year=2016) → Get 2016 season data
+        - get_league(year=2022, league_id=323196) → Explicit parameters
+
+    Note: Historical seasons (2018-2022) require ESPN_S2 and SWID authentication.
     """
     league = _get_league(league_id, year)
     return {
@@ -293,8 +306,21 @@ def get_standings(
     year: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Return teams ordered by standings.
-    Note: Historical seasons (pre-2023) require ESPN authentication.
+    Get final season standings for any year, ranked by wins/losses.
+
+    Args:
+        league_id: ESPN league ID (optional, defaults to ESPN_LEAGUE_ID env var)
+        year: Season year like 2016, 2022, 2025 (optional, defaults to ESPN_YEAR env var)
+
+    Returns:
+        List of teams with rank, wins, losses, points for/against
+
+    Examples:
+        - get_standings() → Current season standings (uses env vars)
+        - get_standings(year=2016) → 2016 season final standings
+        - get_standings(year=2022, league_id=323196) → Specific league/year
+
+    Note: Historical seasons (2018-2022) require ESPN_S2 and SWID authentication.
     """
     league = _get_league(league_id, year)
     teams = league.standings()
@@ -315,8 +341,24 @@ def get_matchups(
     include_lineups: bool = False,
 ) -> List[Dict[str, Any]]:
     """
-    Weekly matchups via Box Scores (supports live scoring).
-    Note: Historical seasons (pre-2023) require ESPN authentication.
+    Get weekly matchups with scores and optional lineup details for any season/week.
+
+    Args:
+        week: NFL week number 1-18 (optional, defaults to current week)
+        league_id: ESPN league ID (optional, defaults to ESPN_LEAGUE_ID env var)
+        year: Season year like 2016, 2022, 2025 (optional, defaults to ESPN_YEAR env var)
+        include_lineups: Include full rosters (default: False)
+
+    Returns:
+        List of matchups with home/away teams, scores, and optional lineups
+
+    Examples:
+        - get_matchups() → Current week matchups
+        - get_matchups(week=5) → Week 5 of current season
+        - get_matchups(week=1, year=2016) → Week 1 of 2016 season
+        - get_matchups(week=10, year=2022, include_lineups=True) → With rosters
+
+    Note: Historical seasons (2018-2022) require ESPN_S2 and SWID authentication.
     """
     start_time = time.time()
     league = _get_league(league_id, year)
@@ -367,11 +409,23 @@ def get_enhanced_boxscores(
     year: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
-    Get enhanced box scores with formatted lineup tables.
-    Returns both structured data and markdown-formatted text for clean display.
-    Includes all roster spots (starters + bench).
-    Note: Historical seasons (pre-2023) require ESPN authentication.
-    Note: Box scores before 2019 may have limited data availability.
+    Get detailed box scores with formatted lineup tables (starters + bench) for any week.
+
+    Args:
+        week: NFL week number 1-18 (optional, defaults to current week)
+        league_id: ESPN league ID (optional, defaults to ESPN_LEAGUE_ID env var)
+        year: Season year like 2016, 2022, 2025 (optional, defaults to ESPN_YEAR env var)
+
+    Returns:
+        Structured matchup data + formatted markdown tables with player stats
+
+    Examples:
+        - get_enhanced_boxscores() → Current week boxscores
+        - get_enhanced_boxscores(week=5) → Week 5 of current season
+        - get_enhanced_boxscores(week=1, year=2022) → Week 1 of 2022 season
+
+    Note: Historical seasons (2018-2022) require ESPN_S2 and SWID authentication.
+          Box scores availability is limited for seasons before 2019.
     """
     start_time = time.time()
     league = _get_league(league_id, year)
@@ -423,8 +477,22 @@ def get_power_rankings(
     year: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Two-step-dominance style power rankings.
-    Note: Historical seasons (pre-2023) require ESPN authentication.
+    Get two-step dominance power rankings for any week/season.
+
+    Args:
+        week: NFL week number 1-18 (optional, defaults to current week)
+        league_id: ESPN league ID (optional, defaults to ESPN_LEAGUE_ID env var)
+        year: Season year like 2016, 2022, 2025 (optional, defaults to ESPN_YEAR env var)
+
+    Returns:
+        Teams ranked by power ranking score
+
+    Examples:
+        - get_power_rankings() → Current week rankings
+        - get_power_rankings(week=10) → Week 10 of current season
+        - get_power_rankings(week=5, year=2022) → Week 5 of 2022 season
+
+    Note: Historical seasons (2018-2022) require ESPN_S2 and SWID authentication.
     """
     league = _get_league(league_id, year)
     rankings = league.power_rankings(week=week)
@@ -437,8 +505,20 @@ def get_teams(
     year: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Raw teams array.
-    Note: Historical seasons (pre-2023) require ESPN authentication.
+    Get raw list of all teams in the league for any season.
+
+    Args:
+        league_id: ESPN league ID (optional, defaults to ESPN_LEAGUE_ID env var)
+        year: Season year like 2016, 2022, 2025 (optional, defaults to ESPN_YEAR env var)
+
+    Returns:
+        List of all teams with basic info (no ranking)
+
+    Examples:
+        - get_teams() → All teams in current season
+        - get_teams(year=2016) → All teams from 2016 season
+
+    Note: Historical seasons (2018-2022) require ESPN_S2 and SWID authentication.
     """
     league = _get_league(league_id, year)
     return [_team_dict(t) for t in league.teams]
@@ -451,8 +531,22 @@ def get_scoreboard(
     year: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Legacy scoreboard (useful for older seasons).
-    Note: Historical seasons (pre-2023) require ESPN authentication.
+    Get simple scoreboard view (lighter than box scores) for any week.
+
+    Args:
+        week: NFL week number 1-18 (optional, defaults to current week)
+        league_id: ESPN league ID (optional, defaults to ESPN_LEAGUE_ID env var)
+        year: Season year like 2016, 2022, 2025 (optional, defaults to ESPN_YEAR env var)
+
+    Returns:
+        Matchups with basic scores (no player-level details)
+
+    Examples:
+        - get_scoreboard() → Current week scores
+        - get_scoreboard(week=5) → Week 5 of current season
+        - get_scoreboard(week=1, year=2022) → Week 1 of 2022 season
+
+    Note: Historical seasons (2018-2022) require ESPN_S2 and SWID authentication.
     """
     league = _get_league(league_id, year)
     scoreboard = league.scoreboard(week=week)
@@ -475,8 +569,24 @@ def get_player_info(
     year: Optional[int] = None,
 ):
     """
-    Player lookup by name or ID.
-    Note: Historical seasons (pre-2023) require ESPN authentication.
+    Look up player information by name or ESPN player ID for any season.
+
+    Args:
+        name: Player name like "Patrick Mahomes" (optional, searches league roster)
+        player_id: ESPN player ID (optional, direct lookup)
+        league_id: ESPN league ID (optional, defaults to ESPN_LEAGUE_ID env var)
+        year: Season year like 2016, 2022, 2025 (optional, defaults to ESPN_YEAR env var)
+
+    Returns:
+        Player details including stats, position, team
+
+    Examples:
+        - get_player_info(name="Patrick Mahomes") → Search current season
+        - get_player_info(name="Tom Brady", year=2022) → 2022 season player
+        - get_player_info(player_id=12345) → Direct lookup by ID
+
+    Note: Must provide either 'name' or 'player_id'.
+          Historical seasons (2018-2022) require ESPN_S2 and SWID authentication.
     """
     league = _get_league(league_id, year)
     try:
@@ -507,14 +617,30 @@ def get_player_info(
 # Optional convenience tool for health checks
 @mcp.tool
 def ping() -> str:
+    """
+    Health check endpoint to verify server is running.
+
+    Returns:
+        Simple "pong" response
+
+    Example:
+        - ping() → "pong"
+    """
     return "pong"
 
 
 @mcp.tool
 def get_cache_stats() -> Dict[str, Any]:
     """
-    Get cache statistics for observability.
-    Returns hits, misses, hit rate, and whether caching is enabled.
+    Get cache performance statistics for monitoring and observability.
+
+    Returns:
+        Cache metrics including hits, misses, hit rate, and cached leagues
+
+    Example:
+        - get_cache_stats() → {"enabled": true, "hits": 25, "misses": 5, "hit_rate_percent": 83.3}
+
+    Note: Cache can be toggled via ENABLE_CACHE environment variable.
     """
     total = _CACHE_STATS["hits"] + _CACHE_STATS["misses"]
     hit_rate = (_CACHE_STATS["hits"] / total * 100) if total > 0 else 0.0
@@ -532,8 +658,18 @@ def get_cache_stats() -> Dict[str, Any]:
 @mcp.tool
 def clear_cache() -> Dict[str, str]:
     """
-    Clear the league cache to force fresh data from ESPN.
-    Useful for testing or when you need guaranteed up-to-date data.
+    Clear all cached league data to force fresh API calls to ESPN.
+
+    Returns:
+        Confirmation message with number of cleared entries
+
+    Example:
+        - clear_cache() → {"status": "success", "message": "Cleared 1 cached league(s)"}
+
+    Use cases:
+        - Testing changes or debugging
+        - Forcing fresh data after trades/roster moves
+        - Resetting performance metrics
     """
     count = len(_LEAGUE_CACHE)
     _LEAGUE_CACHE.clear()
