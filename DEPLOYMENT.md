@@ -9,20 +9,21 @@
 - [x] `.gitignore` - ignore temporary/sensitive files
 - [x] Cache toggle implemented (ENABLE_CACHE env var)
 - [x] Structured JSON logging implemented
-- [x] 10 tools total (8 core + 2 observability)
+- [x] 11 tools total (9 core + 2 observability)
 
 ## Tools Available
 
 1. `get_league()` - League metadata
 2. `get_standings()` - Team standings
 3. `get_matchups()` - Weekly matchups with live scoring
-4. `get_power_rankings()` - Power rankings
-5. `get_teams()` - Team list
-6. `get_scoreboard()` - Scoreboard view
-7. `get_player_info()` - Player lookup
-8. `ping()` - Health check
-9. `get_cache_stats()` - Cache observability ⭐ NEW
-10. `clear_cache()` - Force fresh data ⭐ NEW
+4. `get_enhanced_boxscores()` - Enhanced boxscores with formatted tables ⭐ NEW
+5. `get_power_rankings()` - Power rankings
+6. `get_teams()` - Team list
+7. `get_scoreboard()` - Scoreboard view
+8. `get_player_info()` - Player lookup
+9. `ping()` - Health check
+10. `get_cache_stats()` - Cache observability
+11. `clear_cache()` - Force fresh data
 
 ## Deployment Steps
 
@@ -82,6 +83,9 @@ get_league()
 # Get current week matchups
 get_matchups(week=5)
 
+# Get enhanced boxscores with formatted tables
+get_enhanced_boxscores(week=5)
+
 # Check cache performance
 get_cache_stats()
 
@@ -91,6 +95,27 @@ get_standings()
 # Get power rankings
 get_power_rankings()
 ```
+
+### 6. Create Installation Link (Optional)
+
+To create a one-click installation link for Cursor users:
+
+1. Your deployed endpoint: `https://<project>.fastmcp.app/mcp`
+2. Create base64 encoded config:
+   ```bash
+   echo -n '{"url":"https://<project>.fastmcp.app/mcp"}' | base64
+   ```
+3. Build the deep link:
+   ```
+   cursor://anysphere.cursor-deeplink/mcp/install?name=<server-name>&config=<base64-config>
+   ```
+
+**Example:**
+```
+cursor://anysphere.cursor-deeplink/mcp/install?name=rffl-mcp-server&config=eyJ1cmwiOiJodHRwczovL3JmZmwtbWNwLXNlcnZlci5mYXN0bWNwLmFwcC9tY3AifQ%3D%3D
+```
+
+Add this link to your README for easy user onboarding!
 
 ## Monitoring & Observability
 

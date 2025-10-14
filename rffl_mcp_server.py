@@ -11,10 +11,11 @@ from fastmcp import FastMCP
 from espn_api.football import League
 
 """
-rffl-mcp-server: Public-only ESPN Fantasy Football MCP server.
+rffl-mcp-server: ESPN Fantasy Football MCP server with authentication support.
 
-- No cookies. No private leagues.
-- If a league requires auth, calls will raise a clear error.
+- Supports both public and private leagues via ESPN cookies (espn_s2 and SWID)
+- Authentication REQUIRED for historical data (2018-2022 seasons)
+- Recent seasons (2023+) may be accessible without auth if league is public
 - Defaults are set via env: ESPN_LEAGUE_ID (323196) and ESPN_YEAR (2025).
 - Transport:
     - Default: stdio (for local dev)
@@ -23,7 +24,7 @@ rffl-mcp-server: Public-only ESPN Fantasy Football MCP server.
 
 mcp = FastMCP(
     "rffl-mcp-server",
-    "Public-only ESPN Fantasy Football MCP server (via cwendt94/espn-api).",
+    "ESPN Fantasy Football MCP server with authentication support (via cwendt94/espn-api).",
 )
 
 # --- Config / defaults -------------------------------------------------------
@@ -32,6 +33,11 @@ DEFAULT_YEAR = int(os.getenv("ESPN_YEAR", "2025"))
 DEBUG = os.getenv("ESPN_DEBUG", "0") == "1"
 ENABLE_CACHE = os.getenv("ENABLE_CACHE", "true").lower() in ("true", "1", "yes")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# --- Authentication credentials -----------------------------------------------
+# Optional: Provide ESPN_S2 and SWID for accessing private leagues or historical data
+ESPN_S2 = os.getenv("ESPN_S2", None)
+SWID = os.getenv("SWID", None)
 
 # --- Structured Logging Setup ------------------------------------------------
 class JSONFormatter(logging.Formatter):
@@ -75,7 +81,7 @@ def _get_league(
     league_id: Optional[int],
     year: Optional[int],
 ) -> League:
-    """Return a cached League instance (public leagues only)."""
+    """Return a cached League instance with optional authentication."""
     lid = int(league_id or DEFAULT_LEAGUE_ID)
     yr = int(year or DEFAULT_YEAR)
     key = (lid, yr)
@@ -91,9 +97,17 @@ def _get_league(
 
     # Cache miss - fetch from ESPN
     _CACHE_STATS["misses"] += 1
+
+    # Determine if we're using authentication
+    using_auth = ESPN_S2 is not None or SWID is not None
     logger.info(
         "Fetching league from ESPN API",
-        extra={"cache_hit": False, "league_id": lid, "year": yr}
+        extra={
+            "cache_hit": False,
+            "league_id": lid,
+            "year": yr,
+            "authenticated": using_auth
+        }
     )
 
     try:
@@ -101,12 +115,20 @@ def _get_league(
         league = League(
             league_id=lid,
             year=yr,
+            espn_s2=ESPN_S2,
+            swid=SWID,
             debug=DEBUG,
         )
         duration_ms = int((time.time() - start_time) * 1000)
         logger.info(
             "Successfully loaded league from ESPN",
-            extra={"league_id": lid, "year": yr, "duration_ms": duration_ms, "status": "success"}
+            extra={
+                "league_id": lid,
+                "year": yr,
+                "duration_ms": duration_ms,
+                "authenticated": using_auth,
+                "status": "success"
+            }
         )
 
         if ENABLE_CACHE:
@@ -114,15 +136,33 @@ def _get_league(
 
         return league
     except Exception as e:
-        # If it fails here, it's likely a private league or an ESPN-side issue
+        # If it fails here, it's likely a private league, auth issue, or historical data requires auth
         logger.error(
             "Failed to load league",
-            extra={"league_id": lid, "year": yr, "status": "error"}
+            extra={
+                "league_id": lid,
+                "year": yr,
+                "authenticated": using_auth,
+                "status": "error"
+            }
         )
-        raise RuntimeError(
-            f"Unable to load league {lid} ({yr}) without auth. "
-            "This build is PUBLIC-ONLY and does not support private leagues."
-        ) from e
+
+        # Provide helpful error messages based on context
+        if not using_auth and yr < 2023:
+            raise RuntimeError(
+                f"Unable to load league {lid} ({yr}). Historical data (pre-2023) requires "
+                "authentication. Set ESPN_S2 and SWID environment variables."
+            ) from e
+        elif not using_auth:
+            raise RuntimeError(
+                f"Unable to load league {lid} ({yr}). This may be a private league requiring "
+                "authentication. Set ESPN_S2 and SWID environment variables if needed."
+            ) from e
+        else:
+            raise RuntimeError(
+                f"Unable to load league {lid} ({yr}) even with authentication. "
+                "Check that your ESPN_S2 and SWID credentials are valid and you have access to this league."
+            ) from e
 
 
 def _team_dict(t) -> Dict[str, Any]:
@@ -164,6 +204,56 @@ def _box_player_dict(bp) -> Dict[str, Any]:
     }
 
 
+def _format_boxscore_markdown(week: int, matchups_data: List[Dict[str, Any]]) -> str:
+    """Generate markdown formatted boxscore tables for enhanced display."""
+    lines = [f"# Week {week} Enhanced Boxscores\n"]
+
+    for idx, matchup in enumerate(matchups_data, 1):
+        home_team = matchup["home_team"]
+        home_score = matchup["home_score"]
+        away_team = matchup["away_team"]
+        away_score = matchup["away_score"]
+
+        # Matchup header
+        lines.append(f"## Matchup {idx}: {home_team} ({home_score:.2f}) vs {away_team} ({away_score:.2f})\n")
+
+        # Home team lineup
+        lines.append(f"### {home_team} Lineup\n")
+        lines.append("| SLOT | PLAYER | POSITION | INJURY STATUS | PROJ PF | ACTUAL PF |")
+        lines.append("|------|--------|----------|---------------|---------|-----------|")
+
+        for player in matchup["home_lineup"]:
+            slot = player.get("slot", "N/A")
+            name = player.get("name", "Unknown")
+            position = player.get("position", "N/A")
+            injury = player.get("injury_status", "ACTIVE") or "ACTIVE"
+            projected = player.get("projected", 0.0) or 0.0
+            actual = player.get("points", 0.0) or 0.0
+
+            lines.append(f"| {slot} | {name} | {position} | {injury} | {projected:.2f} | {actual:.2f} |")
+
+        lines.append("")  # Blank line
+
+        # Away team lineup
+        lines.append(f"### {away_team} Lineup\n")
+        lines.append("| SLOT | PLAYER | POSITION | INJURY STATUS | PROJ PF | ACTUAL PF |")
+        lines.append("|------|--------|----------|---------------|---------|-----------|")
+
+        for player in matchup["away_lineup"]:
+            slot = player.get("slot", "N/A")
+            name = player.get("name", "Unknown")
+            position = player.get("position", "N/A")
+            injury = player.get("injury_status", "ACTIVE") or "ACTIVE"
+            projected = player.get("projected", 0.0) or 0.0
+            actual = player.get("points", 0.0) or 0.0
+
+            lines.append(f"| {slot} | {name} | {position} | {injury} | {projected:.2f} | {actual:.2f} |")
+
+        lines.append("")  # Blank line between matchups
+
+    return "\n".join(lines)
+
+
 def _settings_dict(s) -> Dict[str, Any]:
     return {
         "team_count": getattr(s, "team_count", None),
@@ -183,7 +273,8 @@ def get_league(
     year: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
-    Get league meta, settings, and team list. PUBLIC leagues only.
+    Get league meta, settings, and team list.
+    Note: Historical seasons (pre-2023) require ESPN authentication.
     """
     league = _get_league(league_id, year)
     return {
@@ -202,7 +293,8 @@ def get_standings(
     year: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Return teams ordered by standings. PUBLIC leagues only.
+    Return teams ordered by standings.
+    Note: Historical seasons (pre-2023) require ESPN authentication.
     """
     league = _get_league(league_id, year)
     teams = league.standings()
@@ -223,7 +315,8 @@ def get_matchups(
     include_lineups: bool = False,
 ) -> List[Dict[str, Any]]:
     """
-    Weekly matchups via Box Scores (supports live scoring). PUBLIC leagues only.
+    Weekly matchups via Box Scores (supports live scoring).
+    Note: Historical seasons (pre-2023) require ESPN authentication.
     """
     start_time = time.time()
     league = _get_league(league_id, year)
@@ -268,13 +361,70 @@ def get_matchups(
 
 
 @mcp.tool
+def get_enhanced_boxscores(
+    week: Optional[int] = None,
+    league_id: Optional[int] = None,
+    year: Optional[int] = None,
+) -> Dict[str, Any]:
+    """
+    Get enhanced box scores with formatted lineup tables.
+    Returns both structured data and markdown-formatted text for clean display.
+    Includes all roster spots (starters + bench).
+    Note: Historical seasons (pre-2023) require ESPN authentication.
+    Note: Box scores before 2019 may have limited data availability.
+    """
+    start_time = time.time()
+    league = _get_league(league_id, year)
+    box_scores = league.box_scores(week=week)
+    w = int(week or getattr(league, "current_week", 0))
+
+    matchups_data: List[Dict[str, Any]] = []
+
+    for bs in box_scores:
+        home_team = getattr(bs, "home_team", None)
+        away_team = getattr(bs, "away_team", None)
+
+        matchup = {
+            "home_team": getattr(home_team, "team_name", "Unknown") if home_team else "Unknown",
+            "home_score": getattr(bs, "home_score", 0.0),
+            "away_team": getattr(away_team, "team_name", "Unknown") if away_team else "Unknown",
+            "away_score": getattr(bs, "away_score", 0.0),
+            "home_lineup": [_box_player_dict(p) for p in getattr(bs, "home_lineup", [])],
+            "away_lineup": [_box_player_dict(p) for p in getattr(bs, "away_lineup", [])],
+        }
+        matchups_data.append(matchup)
+
+    # Generate formatted markdown output
+    formatted_output = _format_boxscore_markdown(w, matchups_data)
+
+    duration_ms = int((time.time() - start_time) * 1000)
+    logger.info(
+        "get_enhanced_boxscores completed",
+        extra={
+            "tool": "get_enhanced_boxscores",
+            "week": w,
+            "duration_ms": duration_ms,
+            "matchup_count": len(matchups_data),
+            "status": "success"
+        }
+    )
+
+    return {
+        "week": w,
+        "matchups": matchups_data,
+        "formatted_output": formatted_output,
+    }
+
+
+@mcp.tool
 def get_power_rankings(
     week: Optional[int] = None,
     league_id: Optional[int] = None,
     year: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Two-step-dominance style power rankings. PUBLIC leagues only.
+    Two-step-dominance style power rankings.
+    Note: Historical seasons (pre-2023) require ESPN authentication.
     """
     league = _get_league(league_id, year)
     rankings = league.power_rankings(week=week)
@@ -287,7 +437,8 @@ def get_teams(
     year: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Raw teams array. PUBLIC leagues only.
+    Raw teams array.
+    Note: Historical seasons (pre-2023) require ESPN authentication.
     """
     league = _get_league(league_id, year)
     return [_team_dict(t) for t in league.teams]
@@ -300,7 +451,8 @@ def get_scoreboard(
     year: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Legacy scoreboard (useful for older seasons). PUBLIC leagues only.
+    Legacy scoreboard (useful for older seasons).
+    Note: Historical seasons (pre-2023) require ESPN authentication.
     """
     league = _get_league(league_id, year)
     scoreboard = league.scoreboard(week=week)
@@ -323,7 +475,8 @@ def get_player_info(
     year: Optional[int] = None,
 ):
     """
-    Player lookup by name or ID. PUBLIC endpoints only; returns limited info if ESPN restricts details.
+    Player lookup by name or ID.
+    Note: Historical seasons (pre-2023) require ESPN authentication.
     """
     league = _get_league(league_id, year)
     try:

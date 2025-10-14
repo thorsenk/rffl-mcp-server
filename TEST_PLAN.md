@@ -133,7 +133,7 @@ LOG_LEVEL=INFO
 - Server starts without errors
 - Endpoint generated: `https://<project>.fastmcp.app/mcp`
 
-**Expected:** 
+**Expected:**
 - Build logs show successful installation
 - Server status: Running
 - Endpoint URL provided
@@ -513,6 +513,6 @@ get_cache_stats()
 
 ---
 
-**Current Status:** Pre-deployment tests complete ✅  
+**Current Status:** Pre-deployment tests complete ✅
 **Next Action:** Deploy to FastMCP Cloud and run functional tests
 
