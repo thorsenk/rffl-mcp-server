@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": ".claude/hooks/protect-env-files.sh",
-            "description": "Prevent committing .env files (with error sound)"
+            "description": "Prevent committing .env files"
           }
         ]
       }
@@ -19,24 +19,12 @@
           {
             "type": "command",
             "command": ".claude/hooks/validate-python-syntax.sh",
-            "description": "Validate Python syntax after file changes (with success/error sounds)"
+            "description": "Validate Python syntax after file changes"
           },
           {
             "type": "command",
             "command": ".claude/hooks/verify-mcp-import.sh",
-            "description": "Verify MCP server can be imported (with success/error sounds)"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/play-success-sound.sh",
-            "description": "Play welcome sound when session starts"
+            "description": "Verify MCP server can be imported"
           }
         ]
       }

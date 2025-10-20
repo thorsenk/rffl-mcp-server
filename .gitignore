@@ -51,3 +51,6 @@ project-overview-raw-context.md
 rffl-design-system-colors.png
 *.zip
 
+# Archive folder (scanner tools and outputs, not part of MCP server)
+archive/
+
