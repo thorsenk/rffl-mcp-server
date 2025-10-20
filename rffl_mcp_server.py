@@ -353,38 +353,49 @@ def get_matchups(
         List of matchups with home/away teams, scores, and optional lineups
 
     Examples:
-        - get_matchups() → Current week matchups
-        - get_matchups(week=5) → Week 5 of current season
-        - get_matchups(week=1, year=2016) → Week 1 of 2016 season
-        - get_matchups(week=10, year=2022, include_lineups=True) → With rosters
+        - get_matchups() → Current week matchups (simple, works all years 2011-2025)
+        - get_matchups(week=5) → Week 5 of current season (simple)
+        - get_matchups(week=1, year=2016) → Week 1 of 2016 season (simple, works!)
+        - get_matchups(week=10, year=2022, include_lineups=True) → With rosters (enhanced, requires 2019+)
 
     Note: Historical seasons (2018-2022) require ESPN_S2 and SWID authentication.
+          Enhanced boxscores (include_lineups=True) only available for seasons 2019+ (rolling ~7 year window).
     """
     start_time = time.time()
     league = _get_league(league_id, year)
-    box_scores = league.box_scores(week=week)
     w = int(week or getattr(league, "current_week", 0))
+
+    # Use scoreboard (simple) by default, box_scores (enhanced) only when lineups requested
+    # This allows simple matchups to work for ALL years 2011-2025
+    # Enhanced boxscores only work for recent years (currently 2019-2025, rolling window)
+    if include_lineups:
+        # Enhanced: Use box_scores for detailed player lineup data
+        matchups = league.box_scores(week=week)
+    else:
+        # Simple: Use scoreboard for basic matchup scores (works all years)
+        matchups = league.scoreboard(week=week)
+
     out: List[Dict[str, Any]] = []
-    for bs in box_scores:
+    for matchup in matchups:
         item = {
             "week": w,
-            "is_playoff": getattr(bs, "is_playoff", False),
-            "matchup_type": getattr(bs, "matchup_type", "NONE"),
+            "is_playoff": getattr(matchup, "is_playoff", False),
+            "matchup_type": getattr(matchup, "matchup_type", "NONE"),
             "home": {
-                **_team_dict(getattr(bs, "home_team", None)),
-                "score": getattr(bs, "home_score", None),
-                "projected": getattr(bs, "home_projected", None),
+                **_team_dict(getattr(matchup, "home_team", None)),
+                "score": getattr(matchup, "home_score", None),
+                "projected": getattr(matchup, "home_projected", None),
             },
             "away": {
-                **_team_dict(getattr(bs, "away_team", None)),
-                "score": getattr(bs, "away_score", None),
-                "projected": getattr(bs, "away_projected", None),
+                **_team_dict(getattr(matchup, "away_team", None)),
+                "score": getattr(matchup, "away_score", None),
+                "projected": getattr(matchup, "away_projected", None),
             },
         }
         if include_lineups:
             item["lineups"] = {
-                "home": [_box_player_dict(p) for p in getattr(bs, "home_lineup", [])],
-                "away": [_box_player_dict(p) for p in getattr(bs, "away_lineup", [])],
+                "home": [_box_player_dict(p) for p in getattr(matchup, "home_lineup", [])],
+                "away": [_box_player_dict(p) for p in getattr(matchup, "away_lineup", [])],
             }
         out.append(item)
 
@@ -396,6 +407,7 @@ def get_matchups(
             "week": w,
             "duration_ms": duration_ms,
             "matchup_count": len(out),
+            "include_lineups": include_lineups,
             "status": "success"
         }
     )
