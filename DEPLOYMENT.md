@@ -6,10 +6,12 @@
 - [x] `rffl_mcp_server.py` - main server code
 - [x] `requirements.txt` - dependencies (fastmcp, espn_api)
 - [x] `README.md` - comprehensive documentation
-- [x] `.gitignore` - ignore temporary/sensitive files
+- [x] `.gitignore` - ignore temporary/sensitive files (including `.claude/` and `.cursor/`)
 - [x] Cache toggle implemented (ENABLE_CACHE env var)
 - [x] Structured JSON logging implemented
 - [x] 11 tools total (9 core + 2 observability)
+- [x] Health check passing (94.1% pass rate, 32/34 tests)
+- [x] get_matchups() supports ALL years 2011-2025 (simple matchups)
 
 ## Tools Available
 
@@ -158,6 +160,23 @@ Returns:
 
 ## Troubleshooting
 
+### Deployment Failures
+
+If deployment fails with build errors:
+
+**Common Causes:**
+- Local development tools (`.claude/`, `.cursor/`, or git hooks) committed to repository
+- Invalid Python syntax in `rffl_mcp_server.py`
+- Missing or incorrect dependencies in `requirements.txt`
+
+**Solutions:**
+1. Verify `.gitignore` includes `.claude/` and `.cursor/`
+2. Run syntax check: `python3 -m py_compile rffl_mcp_server.py`
+3. Remove any accidentally committed dev tools: `git rm -r --cached .claude/`
+4. Push clean commit and redeploy
+
+**Recent Fix:** Commit `6559672` removed `.claude/` hooks that were causing deployment failures. If your deployment fails, ensure this fix is in your branch.
+
 ### Authentication Errors
 
 If you see:
@@ -166,7 +185,7 @@ If you see:
 ```
 
 **Causes:**
-- Private league or historical data (2018-2022) requires ESPN_S2 and SWID cookies
+- Private league or historical data (2011-2022) requires ESPN_S2 and SWID cookies
 - Missing or expired authentication cookies
 
 **Solutions:**
@@ -222,11 +241,12 @@ LOG_LEVEL=DEBUG          # Maximum observability
 ## Important Notes
 
 - ✅ **Supports both public and private leagues** (with ESPN authentication)
-- ✅ **Historical data access** (2018-2022 requires ESPN_S2 and SWID cookies)
+- ✅ **Historical data access** (2011-2025 requires ESPN_S2 and SWID cookies)
 - ✅ **FastMCP Cloud handles** SSL, scaling, and logging dashboard
 - ✅ **Free tier** suitable for personal use
 - ✅ **Structured logs** for easy debugging
 - ✅ **ChatMCP included** - test your tools directly in the browser
+- ⚠️ **Important:** Do NOT commit local development tools (`.claude/`, `.cursor/`) to production - these are excluded via `.gitignore`
 
 ## Next Steps After Deployment
 

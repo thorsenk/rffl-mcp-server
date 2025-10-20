@@ -58,3 +58,6 @@ rffl-design-system-colors.png
 # Archive folder (scanner tools and outputs, not part of MCP server)
 archive/
 
+# Documentation archives (keep in git for reference)
+# docs/
+
