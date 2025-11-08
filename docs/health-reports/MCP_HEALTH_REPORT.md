@@ -1,5 +1,7 @@
 # RFFL MCP Server - Health Check Report
 
+> **⚠️ SUPERSEDED:** This report has been superseded by [`PROJECT_HEALTH_REPORT.md`](../../PROJECT_HEALTH_REPORT.md) which contains the most current health status and analysis. This document is kept for historical reference.
+
 **Report Generated:** 2025-10-20T15:07:46
 **Test Duration:** 8.0 seconds
 **Overall Status:** ⚠ DEGRADED (90.3% tests passing)

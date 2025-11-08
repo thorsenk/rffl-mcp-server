@@ -1,5 +1,7 @@
 # Update Summary: ESPN Authentication Support
 
+> **⚠️ HISTORICAL REFERENCE:** This document describes the initial authentication implementation from October 2025. For current project status, see [`PROJECT_HEALTH_REPORT.md`](../../PROJECT_HEALTH_REPORT.md) and [`CHANGELOG.md`](../../CHANGELOG.md).
+
 **Date**: October 14, 2025
 **Version**: 2.0.0 (Authentication Support)
 **Status**: ✅ Complete and Tested

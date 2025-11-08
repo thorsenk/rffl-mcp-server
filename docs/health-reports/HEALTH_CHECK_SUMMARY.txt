@@ -1,3 +1,6 @@
+⚠️ SUPERSEDED: This report has been superseded by PROJECT_HEALTH_REPORT.md
+   See ../../PROJECT_HEALTH_REPORT.md for current health status.
+
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                 RFFL MCP SERVER - HEALTH CHECK SUMMARY                       ║
 ║                      October 20, 2025 at 15:50                               ║
