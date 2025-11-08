@@ -47,8 +47,13 @@ Single-file MCP server with these architectural components:
 - `ESPN_YEAR` (default: 2025) - Season year
 
 **Authentication (REQUIRED for historical data 2018-2022):**
-- `ESPN_S2=AEARRpE9BJOR4sGFEHsKl/dwwNNveoi/dFkaRsLtMPW+fbH8ufyTijZMqvRa7YaHaX/eeutkeJwvRb+9Os6Z79dDXj9FJXBotB0ZkAvXeSUcYHD7qZkUTHJF31vnQWwZmTDM3jEqivQfrLNXP6w/NIDpl7l+4jtZ7TO2lR/Z8dSNr7/eQHpxh7EnwSEsRtAELbJrT5sk0WHCc1I7Q+tNJuAx4yDVnPtBnaxbHeK+kvomG1uihGsH6sbxIcL4sFPNFCGVWGCySAViax0MEB5Z+qMSuxv5gUc+2bTPvJjdtwRv+g==` - ESPN authentication cookie for RFFL league
-- `SWID={C3FCDEE0-434E-498F-9793-E68E81750B9B}` - ESPN session cookie for RFFL league
+- `ESPN_S2=<your_espn_s2_cookie>` - ESPN authentication cookie (get from browser DevTools)
+- `SWID={<your_swid_cookie}>` - ESPN session cookie (get from browser DevTools)
+
+**⚠️ SECURITY WARNING:** Never commit real credentials to version control. Store credentials in:
+- Local development: `.env` file (gitignored)
+- Production deployment: FastMCP Cloud environment variables (dashboard)
+- See "Getting ESPN Cookies" section below for instructions
 
 **Observability & Performance:**
 - `ENABLE_CACHE` (default: true) - Toggle league caching
@@ -224,6 +229,14 @@ Cache logic is in `_get_league()` function (lines 80-166). Key considerations:
 2. Verify current week detection works (`league.current_week`)
 3. Test matchups and boxscores for active weeks
 4. No code changes needed - year is parameterized
+
+## See Also
+
+- **[README.md](README.md)** - User documentation and quick start guide
+- **[API.md](API.md)** - Complete API reference for all 11 tools
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - FastMCP Cloud deployment guide
+- **[TEST_PLAN.md](TEST_PLAN.md)** - Testing strategy and health checks
+- **[PROJECT_HEALTH_REPORT.md](PROJECT_HEALTH_REPORT.md)** - Current health status and metrics
 
 ## Project Evolution
 
