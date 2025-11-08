@@ -1,5 +1,7 @@
 # Documentation Update Summary
 
+> **📋 HISTORICAL REFERENCE:** This document describes documentation updates from October 2025. For current documentation status, see [README.md](README.md), [API.md](API.md), and [CHANGELOG.md](CHANGELOG.md).
+
 **Date:** October 20, 2025
 **Status:** ✅ Complete
 

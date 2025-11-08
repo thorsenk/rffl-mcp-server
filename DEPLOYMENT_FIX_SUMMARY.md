@@ -1,5 +1,7 @@
 # FastMCP Cloud Deployment Fix - Summary
 
+> **📋 HISTORICAL REFERENCE:** This document describes a deployment issue that was resolved in October 2025. For current deployment status, see [DEPLOYMENT.md](DEPLOYMENT.md) and [PROJECT_HEALTH_REPORT.md](PROJECT_HEALTH_REPORT.md).
+
 **Date:** October 20, 2025
 **Issue:** Failed deployments (commits `5dec458` and `ebd0c28`)
 **Status:** ✅ **FIXED** - New deployment triggered

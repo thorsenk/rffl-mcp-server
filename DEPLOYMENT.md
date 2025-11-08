@@ -256,6 +256,14 @@ LOG_LEVEL=DEBUG          # Maximum observability
 4. Integrate with your AI agent/application
 5. Set up any additional environment variables as needed
 
+## See Also
+
+- **[README.md](README.md)** - User documentation and getting started guide
+- **[API.md](API.md)** - Complete API reference for all tools
+- **[CLAUDE.md](CLAUDE.md)** - Developer guidance and architecture
+- **[TEST_PLAN.md](TEST_PLAN.md)** - Testing strategy and verification steps
+- **[PROJECT_HEALTH_REPORT.md](PROJECT_HEALTH_REPORT.md)** - Current health status
+
 ## Support
 
 - FastMCP Docs: [gofastmcp.com](https://gofastmcp.com/getting-started/quickstart)

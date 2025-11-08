@@ -518,6 +518,13 @@ get_cache_stats()
 
 ---
 
+## See Also
+
+- **[PROJECT_HEALTH_REPORT.md](PROJECT_HEALTH_REPORT.md)** - Detailed health analysis and current status
+- **[README.md](README.md)** - User documentation and quick start
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deployment guide and troubleshooting
+- **[API.md](API.md)** - Complete API reference for all tools
+
 ## Current Status Summary
 
 **Overall Health:** ✅ **94.1% (A-)**

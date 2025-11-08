@@ -450,3 +450,11 @@ Built with:
 ## License
 
 MIT
+
+## See Also
+
+- **[API.md](API.md)** - Complete API reference for all 11 tools
+- **[CLAUDE.md](CLAUDE.md)** - Developer guidance and architecture details
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - FastMCP Cloud deployment checklist
+- **[TEST_PLAN.md](TEST_PLAN.md)** - Comprehensive testing strategy
+- **[PROJECT_HEALTH_REPORT.md](PROJECT_HEALTH_REPORT.md)** - Current health status (94.1% pass rate)
